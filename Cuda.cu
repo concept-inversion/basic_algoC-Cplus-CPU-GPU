@@ -199,3 +199,42 @@ if(length==1 && threadIdx.x==0 )
 }
 }
 
+
+/*
+Parallel reduce coalesced
+*/
+__shared__ int a[5];
+117         if(threadIdx.x==0){
+118         for (int i=0; i<5;i++){
+119         a[i]=i;}}
+120         int len=5;
+121         while(len/2>0 && threadIdx.x<len)
+122         {
+123         int required = len/2 + len%2;
+124         int offset = blockDim.x; 
+125         //printf("\nStart:%d, step:%d,stop:%d\n",start,step,stop);
+126         int halfpoint=(len/2);
+127         printf("Halfpoint:%d\n ",halfpoint);
+128                 for (int i =threadIdx.x; i<required;i+=offset)
+129                 {
+130                 int temp1=a[i];
+131                 int temp2=a[i+halfpoint];
+132                 __syncthreads();
+133                         
+134                 if  (i == (required-1) && i>0)
+135                 {
+136                 if (required%2==1)
+137                         {
+138                         //printf("\n copy for %d\n",i);
+139                         a[i]=temp2;
+140                         }
+141                 }
+142                 else{a[i]= temp1+temp2;}
+143                 __syncthreads();
+144                 printf("thread: %d working on:%d and %d,value: %d\n",threadIdx.x,i,i+halfpoint,a[i]);
+145                 }
+146                 __syncthreads();
+147                 len=halfpoint+len%2;
+148         }
+149         printf("Result: %d  thread%d \n", a[0],threadIdx.x);
+
