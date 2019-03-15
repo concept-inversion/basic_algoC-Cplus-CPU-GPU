@@ -38,7 +38,7 @@ int binary_search(int value, int *arr)
         else if (value>arr[index])
         {
             // set low to index+1
-            low = low+1;
+            low = index+1;
         }
         else
         {
